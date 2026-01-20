@@ -1,0 +1,60 @@
+* {
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f5f5f5;
+}
+
+.container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.card {
+  background: white;
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.linha-marca {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.linha-marca span {
+  font-weight: 500;
+}
+
+.linha-marca input {
+  width: 160px;
+  padding: 6px;
+}
+
+input {
+  padding: 8px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.resultado {
+  background: #e6f7ff;
+  padding: 16px;
+  border-radius: 8px;
+}
