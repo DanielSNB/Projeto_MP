@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./App.css";
 
 type Marca = {
   nome: string;
@@ -18,32 +19,66 @@ const MARCAS_INICIAIS: Marca[] = [
   { nome: "Happymed", valor: 0 },
 ];
 
+// 👉 Formata valor para moeda BR
+function formatCurrency(value: string) {
+  const apenasNumeros = value.replace(/\D/g, "");
+  const numero = Number(apenasNumeros) / 100;
+
+  return numero.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+// 👉 Converte string formatada em número
+function parseCurrency(value: string) {
+  const apenasNumeros = value.replace(/\D/g, "");
+  return Number(apenasNumeros) / 100;
+}
+
 export default function App() {
   const [marcas, setMarcas] = useState<Marca[]>(MARCAS_INICIAIS);
-  const [totalVendas, setTotalVendas] = useState("");
+
+  const [totalVendasFormatado, setTotalVendasFormatado] = useState("");
+  const [totalVendasNumero, setTotalVendasNumero] = useState(0);
+
+  const [valoresFormatados, setValoresFormatados] = useState<string[]>(
+    MARCAS_INICIAIS.map(() => "")
+  );
+
   const [percentual, setPercentual] = useState<number | null>(null);
 
-  function atualizarValor(index: number, valor: string) {
-    const novoValor = Number(valor);
+  function atualizarValor(index: number, valorDigitado: string) {
+    const numero = parseCurrency(valorDigitado);
 
     setMarcas((prev) =>
       prev.map((marca, i) =>
-        i === index
-          ? { ...marca, valor: isNaN(novoValor) ? 0 : novoValor }
-          : marca
+        i === index ? { ...marca, valor: numero } : marca
+      )
+    );
+
+    setValoresFormatados((prev) =>
+      prev.map((v, i) =>
+        i === index ? formatCurrency(valorDigitado) : v
       )
     );
   }
 
+  function handleTotalVendasChange(valorDigitado: string) {
+    const numero = parseCurrency(valorDigitado);
+
+    setTotalVendasFormatado(formatCurrency(valorDigitado));
+    setTotalVendasNumero(numero);
+  }
+
   function calcularPercentual() {
-    const total = Number(totalVendas);
-    if (isNaN(total) || total <= 0) {
+    if (totalVendasNumero <= 0) {
       alert("Informe um total de vendas válido.");
       return;
     }
 
     const somaMarcas = marcas.reduce((acc, m) => acc + m.valor, 0);
-    const resultado = (somaMarcas / total) * 100;
+    const resultado = (somaMarcas / totalVendasNumero) * 100;
 
     setPercentual(resultado);
   }
@@ -61,16 +96,23 @@ export default function App() {
           <div key={marca.nome} className="linha-marca">
             <span>{marca.nome}</span>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               placeholder="R$ 0,00"
-              value={marca.valor === 0 ? "" : marca.valor}
-              onChange={(e) => atualizarValor(index, e.target.value)}
+              value={valoresFormatados[index]}
+              onChange={(e) =>
+                atualizarValor(index, e.target.value)
+              }
             />
           </div>
         ))}
 
         <strong>
-          Total marcas próprias: R$ {somaMarcas.toFixed(2)}
+          Total marcas próprias:{" "}
+          {somaMarcas.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}
         </strong>
       </section>
 
@@ -78,10 +120,13 @@ export default function App() {
         <h2>Total de vendas da loja</h2>
 
         <input
-          type="number"
-          placeholder="Ex: 100000"
-          value={totalVendas}
-          onChange={(e) => setTotalVendas(e.target.value)}
+          type="text"
+          inputMode="numeric"
+          placeholder="R$ 0,00"
+          value={totalVendasFormatado}
+          onChange={(e) =>
+            handleTotalVendasChange(e.target.value)
+          }
         />
 
         <button onClick={calcularPercentual}>
@@ -94,7 +139,8 @@ export default function App() {
           <h2>Resultado</h2>
           <p>
             As marcas próprias representam{" "}
-            <strong>{percentual.toFixed(2)}%</strong> do total de vendas.
+            <strong>{percentual.toFixed(2)}%</strong> do total
+            de vendas.
           </p>
         </section>
       )}
