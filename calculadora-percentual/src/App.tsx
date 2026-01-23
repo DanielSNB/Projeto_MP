@@ -19,7 +19,9 @@ const MARCAS_INICIAIS: Marca[] = [
   { nome: "Happymed", valor: 0 },
 ];
 
-// 👉 Formata valor para moeda BR
+const META_PERCENTUAL = 0.2;
+
+// Formata valor para moeda BR
 function formatCurrency(value: string) {
   const apenasNumeros = value.replace(/\D/g, "");
   const numero = Number(apenasNumeros) / 100;
@@ -30,7 +32,7 @@ function formatCurrency(value: string) {
   });
 }
 
-// 👉 Converte string formatada em número
+// Converte string formatada em número
 function parseCurrency(value: string) {
   const apenasNumeros = value.replace(/\D/g, "");
   return Number(apenasNumeros) / 100;
@@ -39,14 +41,15 @@ function parseCurrency(value: string) {
 export default function App() {
   const [marcas, setMarcas] = useState<Marca[]>(MARCAS_INICIAIS);
 
-  const [totalVendasFormatado, setTotalVendasFormatado] = useState("");
-  const [totalVendasNumero, setTotalVendasNumero] = useState(0);
-
   const [valoresFormatados, setValoresFormatados] = useState<string[]>(
     MARCAS_INICIAIS.map(() => "")
   );
 
+  const [totalVendasFormatado, setTotalVendasFormatado] = useState("");
+  const [totalVendasNumero, setTotalVendasNumero] = useState(0);
+
   const [percentual, setPercentual] = useState<number | null>(null);
+  const [diferencaMeta, setDiferencaMeta] = useState<number | null>(null);
 
   function atualizarValor(index: number, valorDigitado: string) {
     const numero = parseCurrency(valorDigitado);
@@ -78,12 +81,18 @@ export default function App() {
     }
 
     const somaMarcas = marcas.reduce((acc, m) => acc + m.valor, 0);
-    const resultado = (somaMarcas / totalVendasNumero) * 100;
+    const percentualCalculado =
+      (somaMarcas / totalVendasNumero) * 100;
 
-    setPercentual(resultado);
+    const metaEmReais = totalVendasNumero * META_PERCENTUAL;
+    const diferenca = somaMarcas - metaEmReais;
+
+    setPercentual(percentualCalculado);
+    setDiferencaMeta(diferenca);
   }
 
   const somaMarcas = marcas.reduce((acc, m) => acc + m.valor, 0);
+  const metaEmReais = totalVendasNumero * META_PERCENTUAL;
 
   return (
     <div className="container">
@@ -134,13 +143,41 @@ export default function App() {
         </button>
       </section>
 
-      {percentual !== null && (
+      {percentual !== null && diferencaMeta !== null && (
         <section className="resultado">
           <h2>Resultado</h2>
+
           <p>
             As marcas próprias representam{" "}
-            <strong>{percentual.toFixed(2)}%</strong> do total
-            de vendas.
+            <strong>{percentual.toFixed(2)}%</strong> do total de
+            vendas.
+          </p>
+
+          <p>
+            Meta de 20%:{" "}
+            <strong>
+              {metaEmReais.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </strong>
+          </p>
+
+          <p
+            style={{
+              color: diferencaMeta < 0 ? "red" : "green",
+              fontWeight: "bold",
+            }}
+          >
+            {diferencaMeta < 0
+              ? `Faltam ${Math.abs(diferencaMeta).toLocaleString(
+                  "pt-BR",
+                  { style: "currency", currency: "BRL" }
+                )} para bater a meta`
+              : `Meta ultrapassada em ${diferencaMeta.toLocaleString(
+                  "pt-BR",
+                  { style: "currency", currency: "BRL" }
+                )}`}
           </p>
         </section>
       )}
